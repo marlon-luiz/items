@@ -1,0 +1,185 @@
+<p-card header="Cadastro">
+  <div class="p-fluid">
+    <form [formGroup]="itemForm">
+      <div class="grid mb-3">
+        <div class="col-12">
+          <label class="inline-block mb-2" for="name">Nome *</label>
+
+          <input
+            class="p-inputtext"
+            id="name"
+            type="text"
+            formControlName="name"
+            autocomplete="off"
+          />
+
+          <div class="p-error" *ngIf="isInvalid('name')">
+            Este campo é obrigatório e deve conter no máximo 50 caracteres
+            alfabéticos.
+          </div>
+        </div>
+      </div>
+
+      <div class="grid mb-3">
+        <div class="col-12 lg:col-5 xl:col-4">
+          <div class="p-inputgroup block">
+            <label class="inline-block mb-2">Unidade de Medida *</label>
+
+            <div class="flex mt-1">
+              <div *ngFor="let option of unitMeasurementOptions" class="mr-2">
+                <p-radioButton
+                  name="unitMeasurement"
+                  [id]="option.value"
+                  [value]="option.value"
+                  [label]="option.label"
+                  formControlName="unitMeasurement"
+                ></p-radioButton>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 lg:col-3">
+          <label class="inline-block mb-2" for="quantity">Quantidade</label>
+
+          <div class="p-inputgroup">
+            <input
+              class="p-inputtext p-component"
+              currencyMask
+              id="quantity"
+              title=""
+              formControlName="quantity"
+              [options]="{
+                prefix: '',
+                thousands: '.',
+                decimal: ',',
+                allowNegative: false,
+                precision: getQuantityPrecision(),
+                align: 'left'
+              }"
+            />
+
+            <span class="p-inputgroup-addon">
+              {{ getUnitMeasurementLabel() }}
+            </span>
+          </div>
+
+          <div class="p-error" *ngIf="isInvalid('quantity') || itemForm.errors?.quantityRequired">
+            Este campo é obrigatório.
+          </div>
+        </div>
+
+        <div class="col-12 lg:col-3">
+          <label class="inline-block mb-2" for="price">Preço *</label>
+
+          <div class="p-inputgroup">
+            <span class="p-inputgroup-addon">R$</span>
+
+            <input
+              class="p-inputtext p-component"
+              currencyMask
+              id="price"
+              formControlName="price"
+              [options]="{
+                prefix: '',
+                thousands: '.',
+                decimal: ',',
+                allowNegative: false
+              }"
+            />
+          </div>
+
+          <div class="p-error" *ngIf="isInvalid('price')">
+            Este campo é obrigatório.
+          </div>
+        </div>
+      </div>
+
+      <div class="grid mb-3">
+        <div class="col-12 lg:col-3 lg:mt-5">
+          <div>
+            <p-checkbox
+              label="Produto Perecível"
+              id="perishableProduct"
+              formControlName="perishableProduct"
+              [binary]="true"
+            ></p-checkbox>
+          </div>
+        </div>
+
+        <div class="col-12 lg:col-3">
+          <label class="inline-block mb-2" for="expirationDate">
+            Data de validade
+          </label>
+
+          <p-calendar
+            id="expirationDate"
+            formControlName="expirationDate"
+            dateFormat="dd/mm/yy"
+            #expiration
+          ></p-calendar>
+
+          <div class="p-error" *ngIf="isProductExpired()">
+            Este produto já se encontra vencido.
+          </div>
+
+          <div
+            class="p-error"
+            *ngIf="
+              isInvalid('expirationDate') ||
+              itemForm.errors?.expirationDateRequired
+            "
+          >
+            Este campo é obrigatório caso o produto seja perecível e deve estar
+            no formato brasileiro (dia/mês/ano).
+          </div>
+        </div>
+
+        <div class="col-12 lg:col-3">
+          <label class="inline-block mb-2" for="manufactureDate">
+            Data de fabricação *
+          </label>
+
+          <p-calendar
+            id="manufactureDate"
+            formControlName="manufactureDate"
+            dateFormat="dd/mm/yy"
+            [maxDate]="expiration.value"
+          ></p-calendar>
+
+          <div class="p-error" *ngIf="isInvalid('manufactureDate')">
+            Este campo é obrigatório e deve estar no formato brasileiro
+            (dia/mês/ano).
+          </div>
+
+          <div
+            class="p-error"
+            *ngIf="itemForm.errors?.manufactureGreaterThanExpiration"
+          >
+            A data de fabricação não pode ser superior a data de validade.
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-content-end">
+      <p-button
+        type="button"
+        (click)="cancel()"
+        styleClass="p-button-secondary"
+        label="Cancelar"
+        class="mr-2"
+      ></p-button>
+
+      <p-button
+        type="submit"
+        (click)="submitForm($event)"
+        [disabled]="!itemForm.valid"
+        styleClass="p-button-success"
+        label="Salvar"
+      ></p-button>
+    </div>
+  </ng-template>
+</p-card>
